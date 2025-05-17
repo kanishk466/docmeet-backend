@@ -4,7 +4,7 @@ const User = require('../models/User');
 // Book appointment (Patient)
 exports.bookAppointment = async (req, res) => {
   try {
-    const { doctorId, date, time } = req.body;
+    const { doctorId, date, time ,issue, medicalHistory} = req.body;
 
     // Check if the slot is already booked
     const existing = await Appointment.findOne({ doctor: doctorId, date, time });
@@ -17,6 +17,8 @@ exports.bookAppointment = async (req, res) => {
       patient: req.user.id,
       date,
       time,
+       issue,           // 🆕 Add issue
+      medicalHistory,  // 🆕 Add medicalHistory
     });
 
     await appointment.save();
