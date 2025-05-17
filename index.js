@@ -1,9 +1,10 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');
+
 // Inside server.js
 const authRoutes = require('./routes/authRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
@@ -13,16 +14,6 @@ const prescriptionRoutes = require('./routes/prescriptionRoutes');
 dotenv.config();
 const app = express();
 
-
-const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: '*', // For development – adjust in prod
-    methods: ['GET', 'POST'],
-  },
-});
-
 // Connect DB
 connectDB();
 
@@ -30,34 +21,6 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-
-
-
-// Socket.IO logic
-io.on('connection', socket => {
-  console.log('New client connected:', socket.id);
-
-  socket.on('join-room', roomId => {
-    socket.join(roomId);
-    socket.to(roomId).emit('user-joined', socket.id);
-  });
-
-  socket.on('offer', ({ offer, roomId }) => {
-    socket.to(roomId).emit('receive-offer', offer);
-  });
-
-  socket.on('answer', ({ answer, roomId }) => {
-    socket.to(roomId).emit('receive-answer', answer);
-  });
-
-  socket.on('ice-candidate', ({ candidate, roomId }) => {
-    socket.to(roomId).emit('receive-ice-candidate', candidate);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
-});
 
 
 // Routes (will add soon)
@@ -70,6 +33,57 @@ app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
+
+
+
+
+const server = http.createServer(app);
+
+
+
+
+const io = new Server(server, {
+  cors: {
+    origin: '*', // For development – adjust in prod
+    methods: ['GET', 'POST'],
+  },
+});
+
+
+
+// === Socket.IO Signaling Logic ===
+io.on('connection', socket => {
+  console.log('🔗 Client connected:', socket.id);
+
+  socket.on('join-room', roomId => {
+    socket.join(roomId);
+    console.log(`📥 ${socket.id} joined room: ${roomId}`);
+
+    socket.to(roomId).emit('user-joined', socket.id);
+  });
+
+  socket.on('sending-signal', ({ userToSignal, signal, callerId }) => {
+    io.to(userToSignal).emit('user-signal', { signal, callerId });
+  });
+
+  socket.on('returning-signal', ({ signal, callerId }) => {
+    io.to(callerId).emit('receiving-returned-signal', { signal, id: socket.id });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('❌ Client disconnected:', socket.id);
+  });
+});
+
+
+
+
+
+
+
+
+
+
 
 // Server
 // const PORT = process.env.PORT || 5000;

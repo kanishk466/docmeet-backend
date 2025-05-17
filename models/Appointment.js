@@ -9,7 +9,7 @@ const appointmentSchema = new mongoose.Schema({
   medicalHistory: { type: String }, // 🆕 Optional medical background
   status: {
     type: String,
-    enum: ['booked', 'completed', 'cancelled'],
+    enum: ['booked', 'completed', 'cancelled','inProgress'],
     default: 'booked',
   },
 }, { timestamps: true });
