@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 
+
 // Book appointment (Patient)
 exports.bookAppointment = async (req, res) => {
   try {
@@ -18,7 +19,10 @@ exports.bookAppointment = async (req, res) => {
       date,
       time,
        issue,           // 🆕 Add issue
-      medicalHistory,  // 🆕 Add medicalHistory
+      medicalHistory, 
+       // 🆕 Add medicalHistory
+     roomId: 'room_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
+,
     });
 
     await appointment.save();

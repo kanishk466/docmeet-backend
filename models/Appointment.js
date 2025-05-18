@@ -12,6 +12,9 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['booked', 'completed', 'cancelled','inProgress'],
     default: 'booked',
   },
+    roomId: {
+      type:String
+    }
 }, { timestamps: true });
 
 
